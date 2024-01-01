@@ -1,0 +1,27 @@
+data:
+  raw: "data/data_raw.xlsx"
+  pred: "data/data_pred.xlsx"
+parameters:
+  model_parameters: "parameters/model_parameters.yaml"
+  model_hyperparameters: "parameters/model_hyperparameters.yaml"
+plots:
+  distribution_columns: "plots/distribution_columns.png"
+  average_monthly_hours: "plots/average_monthly_hours.png"
+  correlation_matrix: "plots/correlation_matrix.png"
+  confusion_matrix: "plots/confusion_matrix.png"
+  model_performance: "plots/model_performance.png"
+  feature_importance: "plots/feature_importance.png"
+  shapley_summary: "plots/shapley_summary.png"
+results:
+  data_description: "results/data_description.txt"
+  model_best_param: "results/model_best_param.yaml"
+  model_object: "results/model_object.pkl"
+columns:
+  target: left
+  predicted: predicted
+  difference: difference
+  drop:
+    - promotion_last_5years
+    - department
+  encode:
+    - salary

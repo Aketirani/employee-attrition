@@ -1,0 +1,30 @@
+Shape of the dataset: (12985, 13)
+
+Column Descriptions:
+|       |   satisfaction_level |   last_evaluation |   number_project |   average_monthly_hours |   time_spend_company |   work_accident |         left |   promotion_last_5years |   interaction_feature |   projects_per_hour |   avg_hours_per_project |
+|:------|---------------------:|------------------:|-----------------:|------------------------:|---------------------:|----------------:|-------------:|------------------------:|----------------------:|--------------------:|------------------------:|
+| count |         12985        |      12985        |      12985       |              12985      |          12985       |    12985        | 12985        |           12985         |             12985     |      12985          |              12985      |
+| mean  |             0.611908 |          0.716274 |          3.79869 |                200.955  |              3.50897 |        0.144089 |     0.244667 |               0.0222564 |               789.193 |          0.0195371  |                 57.175  |
+| std   |             0.248718 |          0.172154 |          1.23762 |                 49.9161 |              1.47815 |        0.351194 |     0.429906 |               0.147522  |               385.182 |          0.00692806 |                 19.1172 |
+| min   |             0.09     |          0.36     |          2       |                 96      |              2       |        0        |     0        |               0         |               192     |          0.00645161 |                 16.1667 |
+| 25%   |             0.44     |          0.56     |          3       |                156      |              3       |        0        |     0        |               0         |               513     |          0.014652   |                 43.8333 |
+| 50%   |             0.64     |          0.72     |          4       |                200      |              3       |        0        |     0        |               0         |               729     |          0.0185185  |                 54      |
+| 75%   |             0.82     |          0.87     |          5       |                245      |              4       |        0        |     0        |               0         |              1010     |          0.0228137  |                 68.25   |
+| max   |             1        |          1        |          7       |                310      |             10       |        1        |     1        |               1         |              2170     |          0.0618557  |                155      |
+
+Missing Values:
+| Column                |   Missing Values |
+|:----------------------|-----------------:|
+| satisfaction_level    |                0 |
+| last_evaluation       |                0 |
+| number_project        |                0 |
+| average_monthly_hours |                0 |
+| time_spend_company    |                0 |
+| work_accident         |                0 |
+| left                  |                0 |
+| promotion_last_5years |                0 |
+| department            |                0 |
+| salary                |                0 |
+| interaction_feature   |                0 |
+| projects_per_hour     |                0 |
+| avg_hours_per_project |                0 |
