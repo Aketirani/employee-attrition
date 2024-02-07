@@ -1,6 +1,6 @@
 learning_rate: 0.2            # Learning rate eta
 max_depth: 12                 # Maximum depth of a tree
-n_estimators: 100              # Number of estimators
+n_estimators: 100             # Number of estimators
 gamma: 0                      # Minimum split loss
 lambda: 1                     # Regularization term
 scale_pos_weight: 1           # Balance between positive and negative weights

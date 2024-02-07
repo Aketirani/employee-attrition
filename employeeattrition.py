@@ -1,7 +1,6 @@
 import argparse
 import pickle
 import warnings
-from datetime import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -466,9 +465,6 @@ class EmployeeAttrition:
         """
         Run the end-to-end machine learning pipeline.
         """
-        start_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        print(f"Pipeline started at: {start_time}")
-
         df = self.load_data()
         df = self.feature_engineering(df)
         self.save_data_description(df)
@@ -491,9 +487,6 @@ class EmployeeAttrition:
         self.save_predicted_output(test_X, pred_y, test_y)
         self.plot_feature_importance(xgb_model)
         self.plot_shapley_summary(xgb_model, test_X)
-
-        end_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        print(f"Pipeline finished at: {end_time}")
 
 
 if __name__ == "__main__":
