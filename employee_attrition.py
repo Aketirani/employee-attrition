@@ -361,9 +361,7 @@ class EmployeeAttrition:
         with open(self.paths["model_object"], "wb") as file:
             pickle.dump(model, file)
 
-    def train_model_logreg(
-        self, train_X: pd.DataFrame, train_y: pd.Series
-    ) -> None:
+    def train_model_logreg(self, train_X: pd.DataFrame, train_y: pd.Series) -> None:
         """
         Train a logistic regression model and save it to a file.
 
@@ -514,9 +512,7 @@ class EmployeeAttrition:
         plt.savefig(self.paths["feature_importance"])
         plt.close()
 
-    def plot_shapley_summary(
-        self, test_X: pd.DataFrame
-    ) -> None:
+    def plot_shapley_summary(self, test_X: pd.DataFrame) -> None:
         """
         Plot the Shapley summary plot for the XGBoost model.
 
