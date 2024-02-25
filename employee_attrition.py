@@ -553,14 +553,17 @@ class EmployeeAttrition:
         if self.model_type == "log_reg":
             self.hyperparameter_tuning_logreg(train_X, train_y)
             self.train_model_logreg(train_X, train_y)
+            pred_y = self.model_predict(test_X)
+            accuracy = self.calculate_accuracy(test_y, pred_y)
+            self.plot_confusion_matrix(test_y, pred_y, accuracy)
+            self.save_predicted_output(test_X, pred_y, test_y)
         elif self.model_type == "xgboost":
             self.hyperparameter_tuning_xgboost(train_X, train_y)
             self.train_model_xgboost(train_X, train_y, val_X, val_y)
-        pred_y = self.model_predict(test_X)
-        accuracy = self.calculate_accuracy(test_y, pred_y)
-        self.plot_confusion_matrix(test_y, pred_y, accuracy)
-        self.save_predicted_output(test_X, pred_y, test_y)
-        if self.model_type == "xgboost":
+            pred_y = self.model_predict(test_X)
+            accuracy = self.calculate_accuracy(test_y, pred_y)
+            self.plot_confusion_matrix(test_y, pred_y, accuracy)
+            self.save_predicted_output(test_X, pred_y, test_y)
             self.plot_model_performance()
             self.plot_feature_importance()
             self.plot_shapley_summary(test_X)
