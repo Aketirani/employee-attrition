@@ -1,0 +1,17 @@
+@startuml Pipeline Flowchart
+|employee_attrition|
+package "employee-attrition" {
+    :start|
+    partition "employee_attrition.sh" {
+        :set repository path;
+        :set log path;
+        :run python script;
+        partition "employee_attrition.py" {
+            :run pipeline;
+        }
+        :write to log;
+    }
+    :end|
+}
+stop
+@enduml

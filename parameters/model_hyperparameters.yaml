@@ -1,11 +1,10 @@
+log_reg:
+  penalty: [l1, l2]               # Specifies the norm of the penalty
+  solver: [liblinear, saga]       # Algorithm to use
+  max_iter: [100, 200, 300]       # Number of iterations
 xgboost:
   learning_rate: [0.1, 0.2, 0.3]  # Learning rate
   max_depth: [8, 10, 12]          # Maximum depth of a tree
   n_estimators: [100, 200, 300]   # Number of iterations (trees)
   objective: [binary:logistic]    # Loss function
   tree_method: [hist]             # Histogram tree grow method
-
-log_reg:
-  penalty: [l1, l2]             # Specifies the norm of the penalty
-  solver: [liblinear, saga]     # Algorithm to use
-  max_iter: [100, 200, 300]         # Number of iterations

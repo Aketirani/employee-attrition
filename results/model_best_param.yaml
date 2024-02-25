@@ -1,8 +1,8 @@
-xgboost:
-  learning_rate: 0.1
-  max_depth: 10
-  n_estimators: 200
 log_reg:
-  max_iter: 100
+  max_iter: 200
   penalty: l1
   solver: liblinear
+xgboost:
+  learning_rate: 0.2
+  max_depth: 10
+  n_estimators: 100

@@ -3,14 +3,15 @@ from unittest.mock import mock_open, patch
 
 import pandas as pd
 
-from employeeattrition import EmployeeAttrition
+from employee_attrition import EmployeeAttrition
 
 
 class TestEmployeeAttrition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.cfg_file = "config/config.yaml"
-        cls.ea = EmployeeAttrition(cls.cfg_file)
+        cls.model_type = "xgboost"
+        cls.ea = EmployeeAttrition(cls.cfg_file, cls.model_type)
 
     def test_read_config(self):
         cfg_data = self.ea.read_config(self.cfg_file)
@@ -113,6 +114,19 @@ class TestEmployeeAttrition(unittest.TestCase):
     def test__load_model_parameters(self):
         model_parameters = self.ea._load_model_parameters()
         self.assertIsInstance(model_parameters, dict)
+
+    @patch("builtins.open", new_callable=mock_open, read_data="dummy_data")
+    def test__save_model_object(self, mock_open):
+        model = "dummy_model"
+        self.ea._save_model_object(model)
+        mock_open.assert_called_with(self.ea.paths["model_object"], "wb")
+        mock_open().write.assert_called()
+
+    @patch("builtins.open", new_callable=mock_open, read_data="dummy_data")
+    def test__load_model_object(self, mock_open):
+        with patch("pickle.load", return_value="dummy_model"):
+            model = self.ea._load_model_object()
+        self.assertEqual(model, "dummy_model")
 
     @patch("xgboost.XGBClassifier.predict")
     def test_calculate_accuracy(self, mock_predict):

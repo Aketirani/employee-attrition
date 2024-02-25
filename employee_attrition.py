@@ -18,16 +18,18 @@ pd.set_option("display.max_columns", None)
 
 
 class EmployeeAttrition:
-    def __init__(self, cfg_file):
+    def __init__(self, cfg_file, model_type):
         """
         Initialize the class.
 
         :param cfg_file: str, path to the configuration file.
+        :param model_type: str, type of model to run.
         :attr config_file: dict, dictionary containing configuration parameters.
         :attr paths: dict, dictionary containing all the file paths.
         :attr column_names: dict, dictionary containing column names.
         """
         self.config_file = self.read_config(cfg_file)
+        self.model_type = model_type
         self.paths = {
             "data_raw": self.config_file.get("data", {}).get("raw"),
             "data_pred": self.config_file.get("data", {}).get("pred"),
@@ -53,11 +55,11 @@ class EmployeeAttrition:
                 "model_parameters"
             ),
             "model_object": self.config_file.get("results", {}).get("model_object"),
-            "model_performance": self.config_file.get("plots", {}).get(
-                "model_performance"
-            ),
             "confusion_matrix": self.config_file.get("plots", {}).get(
                 "confusion_matrix"
+            ),
+            "model_performance": self.config_file.get("plots", {}).get(
+                "model_performance"
             ),
             "feature_importance": self.config_file.get("plots", {}).get(
                 "feature_importance"
@@ -284,6 +286,38 @@ class EmployeeAttrition:
         with open(self.paths["model_hyperparameters"], "r") as file:
             return yaml.safe_load(file)
 
+    def _save_best_params(self, best_params: dict) -> None:
+        """
+        Save the best parameters to the model_best_param file.
+
+        :param best_params: dict, best parameters obtained from hyperparameter tuning
+        """
+        with open(self.paths["model_best_param"], "w") as file:
+            yaml.dump(best_params, file)
+
+    def hyperparameter_tuning_logreg(self, train_X, train_y):
+        """
+        Perform hyperparameter tuning for logistic regression using Grid Search Cross Validation.
+
+        :param train_X: pd.DataFrame, training features
+        :param train_y: pd.Series, training labels
+        """
+        existing_best_params = self._load_best_params()
+        hyperparameters = self._load_hyperparameters()
+        hyperparameters = hyperparameters["log_reg"]
+        param_grid = {
+            "penalty": hyperparameters["penalty"],
+            "solver": hyperparameters["solver"],
+            "max_iter": hyperparameters["max_iter"],
+        }
+        logreg_model = LogisticRegression()
+        logreg_cv = GridSearchCV(
+            logreg_model, param_grid, cv=3, verbose=0, scoring="accuracy"
+        )
+        logreg_cv.fit(train_X, train_y)
+        existing_best_params["log_reg"] = logreg_cv.best_params_
+        self._save_best_params(existing_best_params)
+
     def hyperparameter_tuning_xgboost(
         self, train_X: pd.DataFrame, train_y: pd.Series
     ) -> None:
@@ -303,36 +337,11 @@ class EmployeeAttrition:
         }
         xgb_model = xgb.XGBClassifier(eval_metric=["logloss"])
         xgb_cv = GridSearchCV(
-            xgb_model, param_grid, cv=4, verbose=0, scoring="accuracy"
+            xgb_model, param_grid, cv=3, verbose=0, scoring="accuracy"
         )
         xgb_cv.fit(train_X, train_y)
         existing_best_params["xgboost"] = xgb_cv.best_params_
-        with open(self.paths["model_best_param"], "w") as file:
-            yaml.dump(existing_best_params, file)
-
-    def hyperparameter_tuning_logreg(self, train_X, train_y):
-        """
-        Perform hyperparameter tuning for logistic regression using Grid Search Cross Validation.
-
-        :param train_X: pd.DataFrame, training features
-        :param train_y: pd.Series, training labels
-        """
-        existing_best_params = self._load_best_params()
-        hyperparameters = self._load_hyperparameters()
-        hyperparameters = hyperparameters["log_reg"]
-        param_grid = {
-            "penalty": hyperparameters["penalty"],
-            "solver": hyperparameters["solver"],
-            "max_iter": hyperparameters["max_iter"],
-        }
-        logreg_model = LogisticRegression()
-        logreg_cv = GridSearchCV(
-            logreg_model, param_grid, cv=4, verbose=0, scoring="accuracy"
-        )
-        logreg_cv.fit(train_X, train_y)
-        existing_best_params["log_reg"] = logreg_cv.best_params_
-        with open(self.paths["model_best_param"], "w") as file:
-            yaml.dump(existing_best_params, file)
+        self._save_best_params(existing_best_params)
 
     def _load_model_parameters(self) -> dict:
         """
@@ -351,6 +360,20 @@ class EmployeeAttrition:
         """
         with open(self.paths["model_object"], "wb") as file:
             pickle.dump(model, file)
+
+    def train_model_logreg(
+        self, train_X: pd.DataFrame, train_y: pd.Series
+    ) -> None:
+        """
+        Train a logistic regression model and save it to a file.
+
+        :param train_X: pd.DataFrame, training features
+        :param train_y: pd.Series, training labels
+        """
+        model_parameters = self._load_model_parameters()["log_reg"]
+        logreg_model = LogisticRegression(**model_parameters)
+        logreg_model.fit(train_X, train_y)
+        self._save_model_object(logreg_model)
 
     def train_model_xgboost(
         self,
@@ -376,20 +399,6 @@ class EmployeeAttrition:
         )
         self._save_model_object(xgb_model)
 
-    def train_model_logreg(
-        self, train_X: pd.DataFrame, train_y: pd.Series
-    ) -> None:
-        """
-        Train a logistic regression model and save it to a file.
-
-        :param train_X: pd.DataFrame, training features
-        :param train_y: pd.Series, training labels
-        """
-        model_parameters = self._load_model_parameters()["log_reg"]
-        logreg_model = LogisticRegression(**model_parameters)
-        logreg_model.fit(train_X, train_y)
-        self._save_model_object(logreg_model)
-
     def _load_model_object(self):
         """
         Load the trained model object from the file.
@@ -398,36 +407,6 @@ class EmployeeAttrition:
         """
         with open(self.paths["model_object"], "rb") as file:
             return pickle.load(file)
-
-    def plot_model_performance(self) -> None:
-        """
-        Plot the log loss and accuracy of the model during training.
-        """
-        model = self._load_model_object()
-        results = model.evals_result()
-        train_logloss = results["validation_0"]["logloss"]
-        val_logloss = results["validation_1"]["logloss"]
-        train_error = results["validation_0"]["error"]
-        val_error = results["validation_1"]["error"]
-
-        plt.figure(figsize=(12, 6))
-        plt.subplot(1, 2, 1)
-        plt.plot(train_logloss, label="Train")
-        plt.plot(val_logloss, label="Validation")
-        plt.title("Log Loss")
-        plt.xlabel("Iteration")
-        plt.ylabel("Log Loss")
-        plt.legend()
-        plt.subplot(1, 2, 2)
-        plt.plot(1 - np.array(train_error), label="Train")
-        plt.plot(1 - np.array(val_error), label="Validation")
-        plt.title("Accuracy")
-        plt.xlabel("Iteration")
-        plt.ylabel("Accuracy")
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(self.paths["model_performance"])
-        plt.close()
 
     def model_predict(self, test_X: pd.DataFrame) -> np.ndarray:
         """
@@ -495,6 +474,36 @@ class EmployeeAttrition:
         )
         df_test.to_excel(self.paths["data_pred"], index=False)
 
+    def plot_model_performance(self) -> None:
+        """
+        Plot the log loss and accuracy of the model during training.
+        """
+        model = self._load_model_object()
+        results = model.evals_result()
+        train_logloss = results["validation_0"]["logloss"]
+        val_logloss = results["validation_1"]["logloss"]
+        train_error = results["validation_0"]["error"]
+        val_error = results["validation_1"]["error"]
+
+        plt.figure(figsize=(12, 6))
+        plt.subplot(1, 2, 1)
+        plt.plot(train_logloss, label="Train")
+        plt.plot(val_logloss, label="Validation")
+        plt.title("Log Loss")
+        plt.xlabel("Iteration")
+        plt.ylabel("Log Loss")
+        plt.legend()
+        plt.subplot(1, 2, 2)
+        plt.plot(1 - np.array(train_error), label="Train")
+        plt.plot(1 - np.array(val_error), label="Validation")
+        plt.title("Accuracy")
+        plt.xlabel("Iteration")
+        plt.ylabel("Accuracy")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(self.paths["model_performance"])
+        plt.close()
+
     def plot_feature_importance(self) -> None:
         """
         Plot the feature importance of the trained XGBoost model.
@@ -545,17 +554,20 @@ class EmployeeAttrition:
         train_X, train_y, val_X, val_y, test_X, test_y = self.prepare_data(
             train_data, val_data, test_data
         )
-        # self.hyperparameter_tuning_xgboost(train_X, train_y)
-        # self.hyperparameter_tuning_logreg(train_X, train_y)
-        self.train_model_xgboost(train_X, train_y, val_X, val_y)
-        # self.train_model_logreg(train_X, train_y)
-        self.plot_model_performance()
+        if self.model_type == "log_reg":
+            self.hyperparameter_tuning_logreg(train_X, train_y)
+            self.train_model_logreg(train_X, train_y)
+        elif self.model_type == "xgboost":
+            self.hyperparameter_tuning_xgboost(train_X, train_y)
+            self.train_model_xgboost(train_X, train_y, val_X, val_y)
         pred_y = self.model_predict(test_X)
         accuracy = self.calculate_accuracy(test_y, pred_y)
         self.plot_confusion_matrix(test_y, pred_y, accuracy)
         self.save_predicted_output(test_X, pred_y, test_y)
-        self.plot_feature_importance()
-        self.plot_shapley_summary(test_X)
+        if self.model_type == "xgboost":
+            self.plot_model_performance()
+            self.plot_feature_importance()
+            self.plot_shapley_summary(test_X)
 
 
 if __name__ == "__main__":
@@ -569,7 +581,15 @@ if __name__ == "__main__":
         default="config/config.yaml",
         help="Path to the configuration file",
     )
+    parser.add_argument(
+        "-m",
+        "--model_type",
+        type=str,
+        choices=["log_reg", "xgboost"],
+        default="xgboost",
+        help="Type of model to run: 'log_reg' or 'xgboost'",
+    )
     args = parser.parse_args()
 
-    EA = EmployeeAttrition(args.cfg_file)
+    EA = EmployeeAttrition(args.cfg_file, args.model_type)
     EA.run_pipeline()
