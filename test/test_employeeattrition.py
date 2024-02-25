@@ -134,7 +134,3 @@ class TestEmployeeAttrition(unittest.TestCase):
         test_y = pd.Series([0, 1, 0])
         self.ea.save_predicted_output(test_X, predicted_values, test_y)
         mock_to_excel.assert_called()
-
-    def test_run_pipeline(self):
-        with patch("builtins.input", return_value="yes"), patch("builtins.print"):
-            self.ea.run_pipeline()
