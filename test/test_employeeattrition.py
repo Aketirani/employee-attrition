@@ -115,10 +115,10 @@ class TestEmployeeAttrition(unittest.TestCase):
         self.assertIsInstance(model_parameters, dict)
 
     @patch("xgboost.XGBClassifier.predict")
-    def test_calculate_accuracy_on_test_set(self, mock_predict):
+    def test_calculate_accuracy(self, mock_predict):
         test_y = pd.Series([0, 1, 0])
         predicted_values = [0, 1, 0]
-        accuracy = self.ea.calculate_accuracy_on_test_set(test_y, predicted_values)
+        accuracy = self.ea.calculate_accuracy(test_y, predicted_values)
         self.assertIsInstance(accuracy, float)
 
     @patch("pandas.DataFrame.to_excel")

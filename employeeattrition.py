@@ -9,6 +9,7 @@ import seaborn as sns
 import shap
 import xgboost as xgb
 import yaml
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import GridSearchCV, train_test_split
 
@@ -302,7 +303,7 @@ class EmployeeAttrition:
         with open(self.paths["model_parameters"], "r") as file:
             return yaml.safe_load(file)
 
-    def train_model(
+    def train_model_xgboost(
         self,
         train_X: pd.DataFrame,
         train_y: pd.Series,
@@ -310,7 +311,7 @@ class EmployeeAttrition:
         val_y: pd.Series,
     ) -> xgb.XGBClassifier:
         """
-        Train the XGBoost model using the best hyperparameters.
+        Train a XGBoost model.
 
         :param train_X: pd.DataFrame, training features
         :param train_y: pd.Series, training labels
@@ -319,6 +320,7 @@ class EmployeeAttrition:
         :return: xgb.XGBClassifier, trained XGBoost model
         """
         model_parameters = self._load_model_parameters()
+        model_parameters = model_parameters["xgboost"]
         xgb_model = xgb.XGBClassifier(
             **model_parameters, eval_metric=["logloss", "error"]
         )
@@ -328,6 +330,24 @@ class EmployeeAttrition:
         with open(self.paths["model_object"], "wb") as file:
             pickle.dump(xgb_model, file)
         return xgb_model
+
+    def train_model_logreg(
+        self, train_X: pd.DataFrame, train_y: pd.Series
+    ) -> LogisticRegression:
+        """
+        Train a logistic regression model.
+
+        :param train_X: pd.DataFrame, training features
+        :param train_y: pd.Series, training labels
+        :return: LogisticRegression, trained logistic regression model
+        """
+        model_parameters = self._load_model_parameters()
+        model_parameters = model_parameters["log_reg"]
+        logreg_model = LogisticRegression(**model_parameters)
+        logreg_model.fit(train_X, train_y)
+        with open(self.paths["model_object"], "wb") as file:
+            pickle.dump(logreg_model, file)
+        return logreg_model
 
     def plot_model_performance(self, xgb_model: xgb.XGBClassifier) -> None:
         """
@@ -371,7 +391,7 @@ class EmployeeAttrition:
             xgb_model = pickle.load(file)
         return xgb_model.predict(features)
 
-    def calculate_accuracy_on_test_set(
+    def calculate_accuracy(
         self, test_y: pd.Series, predicted_values: np.ndarray
     ) -> float:
         """
@@ -412,7 +432,7 @@ class EmployeeAttrition:
         self, test_X: pd.DataFrame, predicted_values: np.ndarray, test_y: pd.Series
     ) -> None:
         """
-        Save the test set, predicted output, and the difference between predicted and actual values to an Excel file.
+        Save the test set, predicted output, and the difference to an Excel file.
 
         :param test_X: pd.DataFrame, test features
         :param predicted_values: np.ndarray, predicted labels for the test set
@@ -479,10 +499,11 @@ class EmployeeAttrition:
             train_data, val_data, test_data
         )
         self.hyperparameter_tuning(train_X, train_y)
-        xgb_model = self.train_model(train_X, train_y, val_X, val_y)
+        xgb_model = self.train_model_xgboost(train_X, train_y, val_X, val_y)
+        # logreg_model = self.train_model_logreg(train_X, train_y)
         self.plot_model_performance(xgb_model)
         pred_y = self.model_predict(test_X)
-        accuracy = self.calculate_accuracy_on_test_set(test_y, pred_y)
+        accuracy = self.calculate_accuracy(test_y, pred_y)
         self.plot_confusion_matrix(test_y, pred_y, accuracy)
         self.save_predicted_output(test_X, pred_y, test_y)
         self.plot_feature_importance(xgb_model)
