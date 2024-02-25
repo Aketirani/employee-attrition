@@ -12,7 +12,7 @@ Logistic Regression is a statistical method used for binary classification, esti
 XGBoost (eXtreme Gradient Boosting) is a powerful gradient boosting framework that builds an ensemble of decision trees sequentially. It enhances traditional gradient boosting by incorporating regularization techniques and optimizing computational efficiency, leading to high predictive accuracy in classification and regression tasks.
 
 ### Model Performance
-The XGBoost model has achieved a promising accuracy rate of `99.15%` on the test dataset, while the Logistic Regression model has achieved a rate of `87.84%`
+The Logistic Regression model has achieved an accuracy of `87.84%`, while the XGBoost model has achieved a promising accuracy of `99.15%`.
 
 ### Conclusion
 In conclusion, XGBoost outperforms Logistic Regression in predicting employee attrition. Its superior performance highlights its effectiveness in capturing complex patterns within the data, making it the preferred choice for this project.
