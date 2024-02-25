@@ -472,6 +472,35 @@ class EmployeeAttrition:
         )
         df_test.to_excel(self.paths["data_pred"], index=False)
 
+    def plot_feature_importance_logreg(self, train_X) -> None:
+        """
+        Plot the feature importance of the trained logistic regression model.
+
+        :param train_X: pd.DataFrame, training features
+        """
+        model = self._load_model_object()
+        coefficients = model.coef_[0]
+        feature_names = train_X.columns
+        sorted_indices = np.argsort(np.abs(coefficients))
+        sorted_coefficients = coefficients[sorted_indices]
+        sorted_feature_names = feature_names[sorted_indices]
+        plt.barh(sorted_feature_names, sorted_coefficients)
+        plt.title('Feature Importance')
+        plt.xlabel('Coefficient Magnitude')
+        plt.tight_layout()
+        plt.savefig(self.paths["feature_importance"])
+        plt.close()
+
+    def plot_feature_importance_xgboost(self) -> None:
+        """
+        Plot the feature importance of the trained XGBoost model.
+        """
+        model = self._load_model_object()
+        xgb.plot_importance(model, importance_type="weight")
+        plt.tight_layout()
+        plt.savefig(self.paths["feature_importance"])
+        plt.close()
+
     def plot_model_performance(self) -> None:
         """
         Plot the log loss and accuracy of the model during training.
@@ -500,16 +529,6 @@ class EmployeeAttrition:
         plt.legend()
         plt.tight_layout()
         plt.savefig(self.paths["model_performance"])
-        plt.close()
-
-    def plot_feature_importance(self) -> None:
-        """
-        Plot the feature importance of the trained XGBoost model.
-        """
-        model = self._load_model_object()
-        xgb.plot_importance(model, importance_type="weight")
-        plt.tight_layout()
-        plt.savefig(self.paths["feature_importance"])
         plt.close()
 
     def plot_shapley_summary(self, test_X: pd.DataFrame) -> None:
@@ -557,6 +576,7 @@ class EmployeeAttrition:
             accuracy = self.calculate_accuracy(test_y, pred_y)
             self.plot_confusion_matrix(test_y, pred_y, accuracy)
             self.save_predicted_output(test_X, pred_y, test_y)
+            self.plot_feature_importance_logreg(train_X)
         elif self.model_type == "xgboost":
             self.hyperparameter_tuning_xgboost(train_X, train_y)
             self.train_model_xgboost(train_X, train_y, val_X, val_y)
@@ -564,8 +584,8 @@ class EmployeeAttrition:
             accuracy = self.calculate_accuracy(test_y, pred_y)
             self.plot_confusion_matrix(test_y, pred_y, accuracy)
             self.save_predicted_output(test_X, pred_y, test_y)
+            self.plot_feature_importance_xgboost()
             self.plot_model_performance()
-            self.plot_feature_importance()
             self.plot_shapley_summary(test_X)
 
 
