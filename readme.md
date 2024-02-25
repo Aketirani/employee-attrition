@@ -25,7 +25,7 @@ The model uses the following key parameters:
 By adjusting these parameters, the model can be fine-tuned to achieve the best performance on the given dataset.
 
 ### Model Performance
-With meticulous tuning and optimization, the model has achieved a promising accuracy rate of `99.23%` on the test dataset.
+With meticulous tuning and optimization, the model has achieved a promising accuracy rate of `99.15%` on the test dataset.
 
 ### Requirements
 Execute `pip install -r requirements.txt` to install the required libraries.

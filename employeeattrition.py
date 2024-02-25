@@ -252,7 +252,7 @@ class EmployeeAttrition:
         :param train_data: pd.DataFrame, training dataset
         :param val_data: pd.DataFrame, validation dataset
         :param test_data: pd.DataFrame, testing dataset
-        :return: tuple, containing training and validation features and labels, and testing features and labels
+        :return: tuple, containing training, validation and testing features and labels
         """
         train_X = train_data.drop(self.column_names["target"], axis=1)
         train_y = train_data[self.column_names["target"]]
@@ -261,6 +261,19 @@ class EmployeeAttrition:
         test_X = test_data.drop(self.column_names["target"], axis=1)
         test_y = test_data[self.column_names["target"]]
         return train_X, train_y, val_X, val_y, test_X, test_y
+
+    def _load_best_params(self) -> dict:
+        """
+        Load existing best parameters from the model_best_param file.
+
+        :return: dict, existing best parameters
+        """
+        try:
+            with open(self.paths["model_best_param"], "r") as file:
+                existing_best_params = yaml.safe_load(file)
+        except FileNotFoundError:
+            existing_best_params = {"xgboost": {}, "log_reg": {}}
+        return existing_best_params
 
     def _load_hyperparameters(self) -> dict:
         """
@@ -271,28 +284,55 @@ class EmployeeAttrition:
         with open(self.paths["model_hyperparameters"], "r") as file:
             return yaml.safe_load(file)
 
-    def hyperparameter_tuning(self, train_X: pd.DataFrame, train_y: pd.Series) -> None:
+    def hyperparameter_tuning_xgboost(
+        self, train_X: pd.DataFrame, train_y: pd.Series
+    ) -> None:
         """
-        Perform hyperparameter tuning using Grid Search Cross Validation.
+        Perform hyperparameter tuning for xgboost using Grid Search Cross Validation.
 
         :param train_X: pd.DataFrame, training features
         :param train_y: pd.Series, training labels
         """
+        existing_best_params = self._load_best_params()
         hyperparameters = self._load_hyperparameters()
+        hyperparameters = hyperparameters["xgboost"]
         param_grid = {
             "max_depth": hyperparameters["max_depth"],
             "learning_rate": hyperparameters["learning_rate"],
             "n_estimators": hyperparameters["n_estimators"],
         }
-        xgb_model = xgb.XGBClassifier(
-            objective="binary:logistic", eval_metric=["logloss"]
-        )
+        xgb_model = xgb.XGBClassifier(eval_metric=["logloss"])
         xgb_cv = GridSearchCV(
-            xgb_model, param_grid, cv=5, verbose=0, scoring="accuracy"
+            xgb_model, param_grid, cv=4, verbose=0, scoring="accuracy"
         )
         xgb_cv.fit(train_X, train_y)
+        existing_best_params["xgboost"] = xgb_cv.best_params_
         with open(self.paths["model_best_param"], "w") as file:
-            yaml.dump(xgb_cv.best_params_, file)
+            yaml.dump(existing_best_params, file)
+
+    def hyperparameter_tuning_logreg(self, train_X, train_y):
+        """
+        Perform hyperparameter tuning for logistic regression using Grid Search Cross Validation.
+
+        :param train_X: pd.DataFrame, training features
+        :param train_y: pd.Series, training labels
+        """
+        existing_best_params = self._load_best_params()
+        hyperparameters = self._load_hyperparameters()
+        hyperparameters = hyperparameters["log_reg"]
+        param_grid = {
+            "penalty": hyperparameters["penalty"],
+            "solver": hyperparameters["solver"],
+            "max_iter": hyperparameters["max_iter"],
+        }
+        logreg_model = LogisticRegression()
+        logreg_cv = GridSearchCV(
+            logreg_model, param_grid, cv=4, verbose=0, scoring="accuracy"
+        )
+        logreg_cv.fit(train_X, train_y)
+        existing_best_params["log_reg"] = logreg_cv.best_params_
+        with open(self.paths["model_best_param"], "w") as file:
+            yaml.dump(existing_best_params, file)
 
     def _load_model_parameters(self) -> dict:
         """
@@ -303,59 +343,68 @@ class EmployeeAttrition:
         with open(self.paths["model_parameters"], "r") as file:
             return yaml.safe_load(file)
 
+    def _save_model_object(self, model):
+        """
+        Save the trained model object to a file.
+
+        :param model: trained model object
+        """
+        with open(self.paths["model_object"], "wb") as file:
+            pickle.dump(model, file)
+
     def train_model_xgboost(
         self,
         train_X: pd.DataFrame,
         train_y: pd.Series,
         val_X: pd.DataFrame,
         val_y: pd.Series,
-    ) -> xgb.XGBClassifier:
+    ) -> None:
         """
-        Train a XGBoost model.
+        Train a XGBoost model and save it to a file.
 
         :param train_X: pd.DataFrame, training features
         :param train_y: pd.Series, training labels
         :param val_X: pd.DataFrame, validation features
         :param val_y: pd.Series, validation labels
-        :return: xgb.XGBClassifier, trained XGBoost model
         """
-        model_parameters = self._load_model_parameters()
-        model_parameters = model_parameters["xgboost"]
+        model_parameters = self._load_model_parameters()["xgboost"]
         xgb_model = xgb.XGBClassifier(
             **model_parameters, eval_metric=["logloss", "error"]
         )
         xgb_model.fit(
             train_X, train_y, eval_set=[(train_X, train_y), (val_X, val_y)], verbose=0
         )
-        with open(self.paths["model_object"], "wb") as file:
-            pickle.dump(xgb_model, file)
-        return xgb_model
+        self._save_model_object(xgb_model)
 
     def train_model_logreg(
         self, train_X: pd.DataFrame, train_y: pd.Series
-    ) -> LogisticRegression:
+    ) -> None:
         """
-        Train a logistic regression model.
+        Train a logistic regression model and save it to a file.
 
         :param train_X: pd.DataFrame, training features
         :param train_y: pd.Series, training labels
-        :return: LogisticRegression, trained logistic regression model
         """
-        model_parameters = self._load_model_parameters()
-        model_parameters = model_parameters["log_reg"]
+        model_parameters = self._load_model_parameters()["log_reg"]
         logreg_model = LogisticRegression(**model_parameters)
         logreg_model.fit(train_X, train_y)
-        with open(self.paths["model_object"], "wb") as file:
-            pickle.dump(logreg_model, file)
-        return logreg_model
+        self._save_model_object(logreg_model)
 
-    def plot_model_performance(self, xgb_model: xgb.XGBClassifier) -> None:
+    def _load_model_object(self):
         """
-        Plot the log loss and accuracy of the XGBoost model during training.
+        Load the trained model object from the file.
 
-        :param xgb_model: xgb.XGBClassifier, trained XGBoost model
+        :return: trained model object
         """
-        results = xgb_model.evals_result()
+        with open(self.paths["model_object"], "rb") as file:
+            return pickle.load(file)
+
+    def plot_model_performance(self) -> None:
+        """
+        Plot the log loss and accuracy of the model during training.
+        """
+        model = self._load_model_object()
+        results = model.evals_result()
         train_logloss = results["validation_0"]["logloss"]
         val_logloss = results["validation_1"]["logloss"]
         train_error = results["validation_0"]["error"]
@@ -380,16 +429,15 @@ class EmployeeAttrition:
         plt.savefig(self.paths["model_performance"])
         plt.close()
 
-    def model_predict(self, features: pd.DataFrame) -> np.ndarray:
+    def model_predict(self, test_X: pd.DataFrame) -> np.ndarray:
         """
-        Make predictions using the trained XGBoost model.
+        Make predictions using the trained model object.
 
-        :param features: pd.DataFrame, features for prediction
+        :param test_X: pd.DataFrame, testing features for prediction
         :return: np.ndarray, predicted labels
         """
-        with open(self.paths["model_object"], "rb") as file:
-            xgb_model = pickle.load(file)
-        return xgb_model.predict(features)
+        model = self._load_model_object()
+        return model.predict(test_X)
 
     def calculate_accuracy(
         self, test_y: pd.Series, predicted_values: np.ndarray
@@ -404,18 +452,18 @@ class EmployeeAttrition:
         return accuracy_score(test_y, predicted_values)
 
     def plot_confusion_matrix(
-        self, test_y: pd.Series, predicted_values: np.ndarray, accuracy: float
+        self, test_y: pd.Series, pred_y: np.ndarray, accuracy: float
     ) -> None:
         """
         Plot the confusion matrix with accuracy in the title.
 
         :param test_y: pd.Series, true labels for the test set
-        :param predicted_values: np.ndarray, predicted labels for the test set
+        :param pred_y: np.ndarray, predicted labels for the test set
         :param accuracy: float, accuracy on the test set
         """
         plt.figure(figsize=(6, 6))
         sns.heatmap(
-            confusion_matrix(test_y, predicted_values),
+            confusion_matrix(test_y, pred_y),
             annot=True,
             fmt="d",
             cmap="Blues",
@@ -447,33 +495,32 @@ class EmployeeAttrition:
         )
         df_test.to_excel(self.paths["data_pred"], index=False)
 
-    def plot_feature_importance(self, xgb_model: xgb.XGBClassifier) -> None:
+    def plot_feature_importance(self) -> None:
         """
         Plot the feature importance of the trained XGBoost model.
-
-        :param xgb_model: xgb.XGBClassifier, trained XGBoost model
         """
-        xgb.plot_importance(xgb_model, importance_type="weight")
+        model = self._load_model_object()
+        xgb.plot_importance(model, importance_type="weight")
         plt.tight_layout()
         plt.savefig(self.paths["feature_importance"])
         plt.close()
 
     def plot_shapley_summary(
-        self, xgb_model: xgb.XGBClassifier, test_X: pd.DataFrame
+        self, test_X: pd.DataFrame
     ) -> None:
         """
         Plot the Shapley summary plot for the XGBoost model.
 
-        :param xgb_model: xgb.XGBClassifier, trained XGBoost model
         :param test_X: pd.DataFrame, test features
         """
-        explainer = shap.TreeExplainer(xgb_model)
+        model = self._load_model_object()
+        explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(test_X)
         summary_plot = shap.summary_plot(
             shap_values,
             test_X,
             feature_names=test_X.columns,
-            class_names=xgb_model.classes_,
+            class_names=model.classes_,
             show=False,
         )
         plt.title("Shapley Summary Plot")
@@ -498,16 +545,17 @@ class EmployeeAttrition:
         train_X, train_y, val_X, val_y, test_X, test_y = self.prepare_data(
             train_data, val_data, test_data
         )
-        self.hyperparameter_tuning(train_X, train_y)
-        xgb_model = self.train_model_xgboost(train_X, train_y, val_X, val_y)
-        # logreg_model = self.train_model_logreg(train_X, train_y)
-        self.plot_model_performance(xgb_model)
+        # self.hyperparameter_tuning_xgboost(train_X, train_y)
+        # self.hyperparameter_tuning_logreg(train_X, train_y)
+        self.train_model_xgboost(train_X, train_y, val_X, val_y)
+        # self.train_model_logreg(train_X, train_y)
+        self.plot_model_performance()
         pred_y = self.model_predict(test_X)
         accuracy = self.calculate_accuracy(test_y, pred_y)
         self.plot_confusion_matrix(test_y, pred_y, accuracy)
         self.save_predicted_output(test_X, pred_y, test_y)
-        self.plot_feature_importance(xgb_model)
-        self.plot_shapley_summary(xgb_model, test_X)
+        self.plot_feature_importance()
+        self.plot_shapley_summary(test_X)
 
 
 if __name__ == "__main__":
