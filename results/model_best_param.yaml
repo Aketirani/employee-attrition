@@ -1,7 +1,7 @@
 log_reg:
   max_iter: 200
-  penalty: l1
-  solver: liblinear
+  penalty: none
+  solver: saga
 xgboost:
   learning_rate: 0.2
   max_depth: 10

@@ -1,6 +1,6 @@
 log_reg:
-  penalty: l1                 # Specifies the norm of the penalty
-  solver: liblinear           # Algorithm to use
+  penalty: none               # Specifies the norm of the penalty
+  solver: saga                # Algorithm to use
   max_iter: 200               # Number of iterations
 xgboost:
   learning_rate: 0.2          # Learning rate eta

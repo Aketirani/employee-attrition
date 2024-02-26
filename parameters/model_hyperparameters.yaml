@@ -1,5 +1,5 @@
 log_reg:
-  penalty: [l1, l2]               # Specifies the norm of the penalty
+  penalty: [l1, l2, none]         # Specifies the norm of the penalty
   solver: [liblinear, saga]       # Algorithm to use
   max_iter: [100, 200, 300]       # Number of iterations
 xgboost:

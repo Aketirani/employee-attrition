@@ -9,6 +9,7 @@ import seaborn as sns
 import shap
 import xgboost as xgb
 import yaml
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import GridSearchCV, train_test_split
@@ -225,6 +226,20 @@ class EmployeeAttrition:
         :return: pd.DataFrame, dataset after one-hot encoding
         """
         return pd.get_dummies(df, columns=columns_to_encode, drop_first=False)
+
+    def normalize_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Normalize the features in the DataFrame excluding the target variable.
+
+        :param df: pd.DataFrame, input dataset
+        :return: pd.DataFrame, normalized dataset
+        """
+        features = df.drop(self.column_names["target"], axis=1)
+        scaler = MinMaxScaler()
+        normalized_features = scaler.fit_transform(features)
+        normalized_df = pd.DataFrame(normalized_features, columns=features.columns, index=features.index)
+        normalized_df[self.column_names["target"]] = df[self.column_names["target"]]
+        return normalized_df
 
     def split_data(
         self, df: pd.DataFrame, train_size: float = 0.8, test_size: float = 0.5
@@ -565,6 +580,7 @@ class EmployeeAttrition:
         self.plot_pearson_correlation_matrix(corr_matrix)
         df = self.drop_columns(df, self.column_names["to_drop"])
         df = self.one_hot_encode(df, self.column_names["to_encode"])
+        df = self.normalize_data(df)
         train_data, val_data, test_data = self.split_data(df)
         train_X, train_y, val_X, val_y, test_X, test_y = self.prepare_data(
             train_data, val_data, test_data
