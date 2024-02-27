@@ -68,8 +68,8 @@ class EmployeeAttrition:
             "shapley_summary": self.config_file.get("plots", {}).get("shapley_summary"),
         }
         self.column_names = {
-            "to_drop": self.config_file.get("columns", {}).get("drop"),
-            "to_encode": self.config_file.get("columns", {}).get("encode"),
+            "drop": self.config_file.get("columns", {}).get("drop"),
+            "encode": self.config_file.get("columns", {}).get("encode"),
             "target": self.config_file.get("columns", {}).get("target"),
             "predicted": self.config_file.get("columns", {}).get("predicted"),
             "difference": self.config_file.get("columns", {}).get("difference"),
@@ -576,8 +576,8 @@ class EmployeeAttrition:
         self.plot_average_monthly_hours_vs_left(df)
         corr_matrix = self.calculate_pearson_correlation(df)
         self.plot_pearson_correlation_matrix(corr_matrix)
-        df = self.drop_columns(df, self.column_names["to_drop"])
-        df = self.one_hot_encode(df, self.column_names["to_encode"])
+        df = self.drop_columns(df, self.column_names["drop"])
+        df = self.one_hot_encode(df, self.column_names["encode"])
         df = self.normalize_data(df)
         train_data, val_data, test_data = self.split_data(df)
         train_X, train_y, val_X, val_y, test_X, test_y = self.prepare_data(
