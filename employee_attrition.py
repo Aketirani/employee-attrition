@@ -9,10 +9,10 @@ import seaborn as sns
 import shap
 import xgboost as xgb
 import yaml
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.preprocessing import MinMaxScaler
 
 warnings.filterwarnings("ignore")
 pd.set_option("display.max_columns", None)
@@ -237,7 +237,9 @@ class EmployeeAttrition:
         features = df.drop(self.column_names["target"], axis=1)
         scaler = MinMaxScaler()
         normalized_features = scaler.fit_transform(features)
-        normalized_df = pd.DataFrame(normalized_features, columns=features.columns, index=features.index)
+        normalized_df = pd.DataFrame(
+            normalized_features, columns=features.columns, index=features.index
+        )
         normalized_df[self.column_names["target"]] = df[self.column_names["target"]]
         return normalized_df
 
@@ -468,19 +470,15 @@ class EmployeeAttrition:
         plt.savefig(self.paths["confusion_matrix"])
         plt.close()
 
-    def save_predicted_output(
-        self, test_X: pd.DataFrame, predicted_values: np.ndarray, test_y: pd.Series
-    ) -> None:
+    def save_predicted_output(self, test_data: pd.DataFrame, pred_y: pd.Series) -> None:
         """
         Save the test set, predicted output, and the difference to an Excel file.
 
-        :param test_X: pd.DataFrame, test features
-        :param predicted_values: np.ndarray, predicted labels for the test set
-        :param test_y: pd.Series, true labels for the test set
+        :param test_X: pd.DataFrame, test data
+        :param pred_y: np.ndarray, predicted labels for the test set
         """
-        df_test = test_X.copy()
-        df_test[self.column_names["predicted"]] = predicted_values
-        df_test[self.column_names["target"]] = test_y
+        df_test = test_data.copy()
+        df_test[self.column_names["predicted"]] = pred_y
         df_test[self.column_names["difference"]] = (
             df_test[self.column_names["predicted"]]
             - df_test[self.column_names["target"]]
@@ -500,8 +498,8 @@ class EmployeeAttrition:
         sorted_coefficients = coefficients[sorted_indices]
         sorted_feature_names = feature_names[sorted_indices]
         plt.barh(sorted_feature_names, sorted_coefficients)
-        plt.title('Feature Importance')
-        plt.xlabel('Coefficient Magnitude')
+        plt.title("Feature Importance")
+        plt.xlabel("Coefficient Magnitude")
         plt.tight_layout()
         plt.savefig(self.paths["feature_importance"])
         plt.close()
@@ -591,7 +589,7 @@ class EmployeeAttrition:
             pred_y = self.model_predict(test_X)
             accuracy = self.calculate_accuracy(test_y, pred_y)
             self.plot_confusion_matrix(test_y, pred_y, accuracy)
-            self.save_predicted_output(test_X, pred_y, test_y)
+            self.save_predicted_output(test_data, pred_y)
             self.plot_feature_importance_logreg(train_X)
         elif self.model_type == "xgboost":
             self.hyperparameter_tuning_xgboost(train_X, train_y)
@@ -599,7 +597,7 @@ class EmployeeAttrition:
             pred_y = self.model_predict(test_X)
             accuracy = self.calculate_accuracy(test_y, pred_y)
             self.plot_confusion_matrix(test_y, pred_y, accuracy)
-            self.save_predicted_output(test_X, pred_y, test_y)
+            self.save_predicted_output(test_data, pred_y)
             self.plot_feature_importance_xgboost()
             self.plot_model_performance()
             self.plot_shapley_summary(test_X)

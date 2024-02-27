@@ -142,9 +142,9 @@ class TestEmployeeAttrition(unittest.TestCase):
             {
                 "col1": [7, 8, 9],
                 "col2": [10, 11, 12],
+                "left": [0, 1, 0],
             }
         )
-        predicted_values = [0, 1, 0]
-        test_y = pd.Series([0, 1, 0])
-        self.ea.save_predicted_output(test_X, predicted_values, test_y)
+        pred_y = [0, 1, 0]
+        self.ea.save_predicted_output(test_X, pred_y)
         mock_to_excel.assert_called()
