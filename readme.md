@@ -1,6 +1,45 @@
 # Predictive Analytics for Employee Attrition
 This project aims to model the probability of employee attrition and provide actionable insights for a company. The predictive model helps identify key factors contributing to attrition and offers recommendations for addressing potential issues. The project includes exploratory data analysis, pre-processing, model development, and a proposed machine learning pipeline for future use.
 
+### Structure
+```
+├── config                      <-- Configuration Folder
+|   └── *.yaml                  <-- Configuration Files
+|
+├── data                        <-- Data Folder
+|   └── *.csv                   <-- Data Files
+|
+|
+├── logs                        <-- Log Folder
+|   └── *.log                   <-- Log Files
+|
+├── parameters                  <-- Parameters Folder
+|   └── *.yaml                  <-- Model Parameters
+|
+├── plots                       <-- Plots Folder
+|   └── *.png                   <-- Plots
+|
+├── results                     <-- Results Folder
+|   └── *.yaml                  <-- Model Results
+|
+├── test                        <-- Test Folder
+|   └── *.py                    <-- Unit Tests
+|
+├── .gitignore                  <-- Configuring Ignored Files
+|
+├── .pre-commit-config.yaml     <-- Pre-Commit Configuration
+|
+├── employee_attrition.py       <-- Main Python Script
+|
+├── employee_attrition.sh       <-- Main Shell Script
+|
+├── flowchart.wsd               <-- Pipeline Flowchart
+|
+├── readme.md                   <-- You Are Here
+|
+├── requirements.txt            <-- Package Requirements
+```
+
 ### Dataset
 The dataset encapsulates essential aspects of employee engagement and work dynamics. It encompasses key parameters like satisfaction levels, project involvement, and work hours, offering a succinct yet insightful snapshot of the workforce. This dataset provides valuable information to discern patterns, identify influential factors, and derive actionable insights to enhance employee satisfaction and retention strategies.
 
