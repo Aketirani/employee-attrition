@@ -25,7 +25,7 @@ This project aims to model the probability of employee attrition and provide act
 ├── test                        <-- Test Folder
 |   └── *.py                    <-- Unit Tests
 |
-├── .gitignore                  <-- Configuring Ignored Files
+├── .gitignore                  <-- Git Ignore Configuration
 |
 ├── .pre-commit-config.yaml     <-- Pre-Commit Configuration
 |
