@@ -1,4 +1,4 @@
-# Predictive Analytics for Employee Attrition
+# Predictive Analytics For Employee Attrition
 This project aims to model the probability of employee attrition and provide actionable insights for a company. The predictive model helps identify key factors contributing to attrition and offers recommendations for addressing potential issues. The project includes exploratory data analysis, pre-processing, model development, and a proposed machine learning pipeline for future use.
 
 ### Structure
