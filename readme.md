@@ -1,6 +1,17 @@
 # Predictive Analytics For Employee Attrition
 This project aims to model the probability of employee attrition and provide actionable insights for a company. The predictive model helps identify key factors contributing to attrition and offers recommendations for addressing potential issues. The project includes exploratory data analysis, pre-processing, model development, and a proposed machine learning pipeline for future use.
 
+### Table of Contents
+- [Structure](#structure)
+- [Dataset](#dataset)
+- [Model Selection](#model-selection)
+- [Model Performance](#model-performance)
+- [Conclusion](#conclusion)
+- [Requirements](#requirements)
+- [Execution](#execution)
+- [Unit Test](#unit-test)
+- [Developer](#developer)
+
 ### Structure
 ```
 ├── config                      <-- Configuration Folder
@@ -59,7 +70,7 @@ In conclusion, XGBoost outperforms Logistic Regression in predicting employee at
 ### Requirements
 Execute `pip install -r requirements.txt` to install the required libraries.
 
-### Exectuion
+### Execution
 Execute `employee-attrition.sh -c config_file.yaml -m model_type` to initiate the entire pipeline.
 
 ### Unit Test
