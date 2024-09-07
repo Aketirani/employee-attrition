@@ -85,8 +85,10 @@ class EmployeeAttrition:
         try:
             with open(cfg_file, "r") as file:
                 cfg_setup = yaml.safe_load(file)
-        except:
+        except FileNotFoundError:
             raise FileNotFoundError(f"{cfg_file} is not a valid config filepath!")
+        except yaml.YAMLError as e:
+            raise ValueError(f"Error parsing YAML file: {e}")
         return cfg_setup
 
     def load_data(self) -> pd.DataFrame:

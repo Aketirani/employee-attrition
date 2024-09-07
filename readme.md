@@ -73,6 +73,12 @@ Execute `pip install -r requirements.txt` to install the required libraries.
 ### Execution
 Execute `employee-attrition.sh -c config_file.yaml -m model_type` to initiate the entire pipeline.
 
+Following arguments can be specified:
+| Argument             | Description                    |
+|----------------------|--------------------------------|
+| `-c`, `--cfg_file`   | Path to the configuration file |
+| `-m`, `--model_type` | Type of model to run           |
+
 ### Unit Test
 Execute `python -m unittest discover test` to run all unit tests, ensuring the reliability of the code base.
 
