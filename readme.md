@@ -14,7 +14,7 @@ This project aims to model the probability of employee attrition and provide act
 
 ### Structure
 ```
-├── config                      <-- Configuration Folder
+┌── config                      <-- Configuration Folder
 |   └── *.yaml                  <-- Configuration Files
 |
 ├── data                        <-- Data Folder
@@ -48,7 +48,7 @@ This project aims to model the probability of employee attrition and provide act
 |
 ├── readme.md                   <-- You Are Here
 |
-├── requirements.txt            <-- Package Requirements
+└── requirements.txt            <-- Package Requirements
 ```
 
 ### Dataset
